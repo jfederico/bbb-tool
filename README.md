@@ -1,4 +1,7 @@
 # BigBlueButton Sakai Meeting Tool
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/bc8daf9cceb041ae95a6d3b5753d4232)](https://www.codacy.com/app/jfederico/bbb-tool?utm_source=github.com&utm_medium=referral&utm_content=jfederico/bbb-tool&utm_campaign=badger)
+
 BigBlueButton is an open source web conferencing system that enables universities and colleges to deliver a high-quality learning experience to remote students.
 
 These instructions describe how to install the BigBlueButton Meeting Tool for Sakai 11.
