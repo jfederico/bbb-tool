@@ -19,7 +19,6 @@ package org.sakaiproject.bbb.tool;
 import java.io.BufferedWriter;
 import java.io.Writer;
 import java.io.IOException;
-import java.util.Properties;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -53,7 +52,7 @@ public class BBBTool extends HttpServlet {
 
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-        logger.debug("init");
+        logger.debug("init()");
         try {
             sakaiProxy = SakaiProxy.getInstance();
             VelocityEngine vengine = new VelocityEngine();

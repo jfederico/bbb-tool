@@ -130,27 +130,22 @@ public class BBBAPIWrapper/* implements Runnable */{
     // --- Initialization related methods ------------------------------------
     // -----------------------------------------------------------------------
     public void start() {
-        if (logger.isDebugEnabled()) logger.debug("init()");
-
+        logger.debug("init()");
         String bbbUrlString = config.getString(BBBMeetingManager.CFG_URL, DEFAULT_BBB_URL);
         if (bbbUrlString == "") {
             logger.warn("No BigBlueButton server specified. The bbb.url property in sakai.properties must be set to a single url. There should be a corresponding shared secret value in the bbb.salt property.");
             return;
         }
-
         String bbbSaltString = config.getString(BBBMeetingManager.CFG_SALT, DEFAULT_BBB_SALT);
         if (bbbSaltString == "") {
             logger.warn("BigBlueButton shared secret was not specified! Use 'bbb.salt = your_bbb_shared_secret' in sakai.properties.");
             return;
         }
-
         // Clean Url.
         bbbUrl = bbbUrlString.substring(bbbUrlString.length()-1, bbbUrlString.length()).equals("/")? bbbUrlString: bbbUrlString + "/";
         bbbSalt = bbbSaltString;
-
         // api will always have a value, except when the url and salt were not configured.
         api = new BaseBBBAPI(bbbUrl, bbbSalt);
-
         bbbAutocloseMeetingWindow = config.getBoolean(BBBMeetingManager.CFG_AUTOCLOSE_WIN, bbbAutocloseMeetingWindow);
         bbbAutorefreshMeetings = (long) config.getInt(BBBMeetingManager.CFG_AUTOREFRESHMEETINGS, (int) bbbAutorefreshMeetings);
         bbbAutorefreshRecordings = (long) config.getInt(BBBMeetingManager.CFG_AUTOREFRESHRECORDINGS, (int) bbbAutorefreshRecordings);
@@ -187,10 +182,8 @@ public class BBBAPIWrapper/* implements Runnable */{
     // -----------------------------------------------------------------------
     // --- BBB API wrapper methods -------------------------------------------
     // -----------------------------------------------------------------------
-    public BBBMeeting createMeeting(BBBMeeting meeting)
-    		throws BBBException {
-        if (logger.isDebugEnabled()) logger.debug("createMeeting()");
-
+    public BBBMeeting createMeeting(BBBMeeting meeting) throws BBBException {
+        logger.debug("createMeeting()");
         // Synchronized to avoid clashes with the allocator task
         synchronized (api) {
             meeting.setHostUrl(api.getUrl());
@@ -198,21 +191,16 @@ public class BBBAPIWrapper/* implements Runnable */{
         }
     }
 
-    public boolean isMeetingRunning(String meetingID)
-    		throws BBBException {
-        if (logger.isDebugEnabled()) logger.debug("isMeetingRunning()");
-
+    public boolean isMeetingRunning(String meetingID) throws BBBException {
+        logger.debug("isMeetingRunning()");
         if ( api == null ) {
             return false;
         }
-
         return api.isMeetingRunning(meetingID);
     }
 
-    public Map<String, Object> getMeetings()
-            throws BBBException {
-        if (logger.isDebugEnabled()) logger.debug("getMeetings()");
-
+    public Map<String, Object> getMeetings() throws BBBException {
+        logger.debug("getMeetings()");
         Map<String, Object> meetings = new HashMap<String, Object>();
         if ( api != null) {
             try{
@@ -227,42 +215,33 @@ public class BBBAPIWrapper/* implements Runnable */{
                 meetings = responseError(BBBException.MESSAGEKEY_UNREACHABLE, e.getMessage() );
             }
         }
-
         return meetings;
     }
 
-    public Map<String, Object> getMeetingInfo(String meetingID, String password)
-            throws BBBException {
-        if (logger.isDebugEnabled()) logger.debug("getMeetingInfo()");
-
+    public Map<String, Object> getMeetingInfo(String meetingID, String password) throws BBBException {
+        logger.debug("getMeetingInfo()");
         Map<String, Object> meetingInfoResponse = new HashMap<String, Object>();
-
         if ( api != null  ) {
             try{
                 meetingInfoResponse = api.getMeetingInfo(meetingID, password);
             } catch ( BBBException e) {
                 if( BBBException.MESSAGEKEY_UNREACHABLE.equals(e.getMessageKey()) ||
-                        BBBException.MESSAGEKEY_HTTPERROR.equals(e.getMessageKey()) ||
-                        BBBException.MESSAGEKEY_INVALIDRESPONSE.equals(e.getMessageKey()) ) {
+                    BBBException.MESSAGEKEY_HTTPERROR.equals(e.getMessageKey()) ||
+                    BBBException.MESSAGEKEY_INVALIDRESPONSE.equals(e.getMessageKey()) ) {
                     meetingInfoResponse = responseError(e.getMessageKey(), e.getMessage() );
                 }
             } catch ( Exception e) {
                 meetingInfoResponse = responseError(BBBException.MESSAGEKEY_UNREACHABLE, e.getMessage() );
             }
-
         }
-
         return meetingInfoResponse;
     }
 
-    public String getJoinMeetingURL(BBBMeeting meeting, User user, boolean isModerator)
-            throws BBBException {
-        if (logger.isDebugEnabled()) logger.debug("getJoinMeetingURL()");
-
+    public String getJoinMeetingURL(BBBMeeting meeting, User user, boolean isModerator) throws BBBException {
+        logger.debug("getJoinMeetingURL()");
         if ( api == null ) {
             throw new BBBException(BBBException.MESSAGEKEY_INTERNALERROR, "Internal tool configuration error");
         }
-
         String meetingID = meeting.getId();
         String userId = this.getUserId(user);
         String userDisplayName = user.getDisplayName();
@@ -270,17 +249,13 @@ public class BBBAPIWrapper/* implements Runnable */{
         if (isModerator) {
             password = meeting.getModeratorPassword();
         }
-
         String joinMeetingURLResponse = api.getJoinMeetingURL(meetingID, userId, userDisplayName, password);
         return joinMeetingURLResponse;
     }
 
-    public Map<String, Object> getRecordings(String meetingID)
-            throws BBBException {
-        if (logger.isDebugEnabled()) logger.debug("getRecordings()");
-
+    public Map<String, Object> getRecordings(String meetingID) throws BBBException {
+        logger.debug("getRecordings()");
         Map<String, Object> recordingsResponse = new HashMap<String, Object>();
-
         if ( api != null ) {
             try{
                 recordingsResponse = api.getRecordings(meetingID);
@@ -294,26 +269,21 @@ public class BBBAPIWrapper/* implements Runnable */{
         } else {
             throw new BBBException(BBBException.MESSAGEKEY_INTERNALERROR, "Internal tool configuration error");
         }
-
         return recordingsResponse;
     }
 
-    public boolean endMeeting(String meetingID, String password)
-            throws BBBException {
-        if (logger.isDebugEnabled()) logger.debug("endMeeting()");
-
+    public boolean endMeeting(String meetingID, String password) throws BBBException {
+        logger.debug("endMeeting()");
         if ( api == null ) {
             throw new BBBException(BBBException.MESSAGEKEY_INTERNALERROR, "Internal tool configuration error");
         }
-
         boolean endMeetingResponse = api.endMeeting(meetingID, password);
         return endMeetingResponse;
     }
 
     public boolean publishRecordings(String meetingID, String recordingID, String publish)
     		throws BBBException {
-        if (logger.isDebugEnabled()) logger.debug("publishRecordings()");
-
+        logger.debug("publishRecordings()");
         if ( api == null ) {
             throw new BBBException(BBBException.MESSAGEKEY_INTERNALERROR, "Internal tool configuration error");
         }
@@ -321,10 +291,8 @@ public class BBBAPIWrapper/* implements Runnable */{
         return publishRecordingsResponse;
     }
 
-    public boolean protectRecordings(String meetingID, String recordingID, String protect)
-            throws BBBException {
-        if (logger.isDebugEnabled()) logger.debug("protectRecordings()");
-
+    public boolean protectRecordings(String meetingID, String recordingID, String protect) throws BBBException {
+        logger.debug("protectRecordings()");
         if ( api == null ) {
             throw new BBBException(BBBException.MESSAGEKEY_INTERNALERROR, "Internal tool configuration error");
         }
@@ -332,10 +300,8 @@ public class BBBAPIWrapper/* implements Runnable */{
         return protectRecordingsResponse;
     }
 
-    public boolean deleteRecordings(String meetingID, String recordingID)
-            throws BBBException {
-        if (logger.isDebugEnabled()) logger.debug("publishRecordings()");
-
+    public boolean deleteRecordings(String meetingID, String recordingID) throws BBBException {
+        logger.debug("publishRecordings()");
         if ( api == null ) {
             throw new BBBException(BBBException.MESSAGEKEY_INTERNALERROR, "Internal tool configuration error");
         }
@@ -343,8 +309,7 @@ public class BBBAPIWrapper/* implements Runnable */{
         return deleteRecordingsResponse;
     }
 
-    public void makeSureMeetingExists(BBBMeeting meeting)
-    		throws BBBException {
+    public void makeSureMeetingExists(BBBMeeting meeting) throws BBBException {
         if ( api == null ) {
             throw new BBBException(BBBException.MESSAGEKEY_INTERNALERROR, "Internal tool configuration error");
         }

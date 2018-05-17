@@ -554,10 +554,8 @@ public class BBBMeetingManagerImpl implements BBBMeetingManager {
         return bbbAPI.protectRecordings(meetingID, recordID, protect);
     }
 
-    public void checkJoinMeetingPreConditions(BBBMeeting meeting)
-            throws BBBException {
+    public void checkJoinMeetingPreConditions(BBBMeeting meeting) throws BBBException {
         // check if meeting is within dates
-
         Site meetingSite = null;
         try{
             meetingSite = siteService.getSite(meeting.getSiteId() );
@@ -571,11 +569,12 @@ public class BBBMeetingManagerImpl implements BBBMeetingManager {
         boolean startOk = meeting.getStartDate() == null || meeting.getStartDate().before(now);
         boolean endOk = meeting.getEndDate() == null || meeting.getEndDate().after(now);
 
-        if (!startOk)
+        if (!startOk) {
             throw new BBBException(BBBException.MESSAGEKEY_NOTSTARTED, "Meeting has not started yet.");
-        if (!endOk)
+        }
+        if (!endOk) {
             throw new BBBException(BBBException.MESSAGEKEY_ALREADYENDED, "Meeting has already ended.");
-
+        }
         // Add the metadata to be used in case of create
         Map<String, String> tmpMeta = meeting.getMeta();
         if( !tmpMeta.containsKey("origin")) tmpMeta.put("origin", "Sakai");
@@ -587,50 +586,6 @@ public class BBBMeetingManagerImpl implements BBBMeetingManager {
         if( !tmpMeta.containsKey("context")) tmpMeta.put("context", siteService.getSiteDisplay(meeting.getSiteId()) );
         if( !tmpMeta.containsKey("contextId")) tmpMeta.put("contextId", meeting.getSiteId() );
         if( !tmpMeta.containsKey("contextActivity")) tmpMeta.put("contextActivity", meeting.getName() );
-
-        /*
-         * //////////////////////////////////////////////////////////////////////////////////////////////////
-         * //This implementation will work only for a small number of users enrolled (teachers or students)
-         * //this is beacuse the long a GET call can be is limited by the configuration of the Webserver
-         * //////////////////////////////////////////////////////////////////////////////////////////////////
-         *
-
-        Map<String, User> attendees = new HashMap<String, User>();
-        Map<String, User> moderators = new HashMap<String, User>();
-        List<Participant> participants = meeting.getParticipants();
-        if( participants != null ){
-            for( int i=0; i < participants.size(); i++){
-                Participant participant = participants.get(i);
-                if( (Participant.MODERATOR).equals(participant.getRole()) ){
-                    moderators.putAll(getUsersParticipating(participant.getSelectionType(), participant.getSelectionId(), meetingSite));
-                } else {
-                    attendees.putAll(getUsersParticipating(participant.getSelectionType(), participant.getSelectionId(), meetingSite));
-                }
-            }
-        }
-
-        if( !tmpMeta.containsKey("meetingModerators")){
-            String meetingModerator = "";
-            for( Map.Entry<String, User> e: moderators.entrySet()){
-                if( meetingModerator.length() > 0 ) meetingModerator += ", ";
-                meetingModerator += e.getValue().getFirstName() + " " + e.getValue().getLastName() + " <" + e.getValue().getEmail() + ">";
-
-            }
-            tmpMeta.put("meetingModerator", meetingModerator);
-
-        }
-        if( !tmpMeta.containsKey("meetingAttendees")){
-            String meetingAttendee = "";
-            for( Map.Entry<String, User> e: attendees.entrySet()){
-                if( meetingAttendee.length() > 0 ) meetingAttendee += ", ";
-                meetingAttendee += e.getValue().getFirstName() + " " + e.getValue().getLastName() + " <" + e.getValue().getEmail() + ">";
-
-            }
-            tmpMeta.put("meetingAttendee", meetingAttendee);
-
-        }
-        */
-        // Metadata ends
 
         // check if is running, (re)create it if not
         bbbAPI.makeSureMeetingExists(meeting);
