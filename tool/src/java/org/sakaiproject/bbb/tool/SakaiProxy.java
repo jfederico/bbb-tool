@@ -177,7 +177,7 @@ class SakaiProxy
 	}
 
 	public String getFileSizeMax() {
-		String maxFileSizeInBytes = serverConfigurationService.getString(BBBMeetingManager.SYSTEM_UPLOAD_MAX);
-		return maxFileSizeInBytes;
+		String maxFileSize = serverConfigurationService.getString(BBBMeetingManager.SYSTEM_UPLOAD_MAX);
+		return maxFileSize;
 	}
 }

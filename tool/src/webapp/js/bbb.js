@@ -288,9 +288,9 @@ meetings.switchState = function (state, arg) {
                 $(this).val('');
                 return;
             }
-            var maxFileSize = meetings.startupArgs.maxFileSizeInBytes;
-            if (this.files[0].size > maxFileSize * 1024 * 1024) {
-                meetings.utils.showMessage(bbb_warning_max_filesize(maxFileSize), 'warning',);
+            var fileSizeMaxInBytes = meetings.startupArgs.fileSizeMax * 1024 * 1024;
+            if (this.files[0].size > fileSizeMaxInBytes) {
+                meetings.utils.showMessage(bbb_warning_max_filesize(meetings.startupArgs.fileSizeMax), 'warning',);
                 $(this).val('');
                 return;
             }
