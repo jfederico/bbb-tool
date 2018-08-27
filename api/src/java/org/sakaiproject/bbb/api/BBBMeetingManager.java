@@ -183,20 +183,14 @@ public interface BBBMeetingManager {
     /**
      * Get playback recordings from BBB server.
      */
-    public Map<String, Object> getRecordings(String meetingID, String groupId, String siteId)
-            throws BBBException;
-
-    /**
-     * Get ALL playback recordings from BBB server.
-     */
-    public Map<String, Object> getAllRecordings()
-			throws BBBException;
+    public Map<String, Object> getRecordings(String siteId, String meetingID, String groupId)
+            throws SecurityException, BBBException, Exception;
 
     /**
      * Get ALL playback recordings from BBB server for the current Site.
      */
-    public Map<String, Object> getSiteRecordings(String siteId)
-            throws SecurityException, Exception;
+    public Map<String, Object> getRecordings(String siteId)
+            throws SecurityException, BBBException, Exception;
 
     /**
      * Log an event indicating that the current user joined the specified

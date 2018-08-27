@@ -735,7 +735,7 @@ public class BBBMeetingEntityProvider extends AbstractEntityProvider implements
             String groupId = (String) params.get("groupId");
             Map<String, Object> meetingInfoResponse = meetingManager.getMeetingInfo(ref.getId(), groupId);
             return new ActionReturn(meetingInfoResponse);
-        } catch (BBBException e) {
+        } catch (Exception e) {
             return new ActionReturn(new HashMap<String, String>());
         }
     }
@@ -749,12 +749,12 @@ public class BBBMeetingEntityProvider extends AbstractEntityProvider implements
             throw new EntityNotFoundException("Meeting not found", null);
         }
 
-        String groupId = (String) params.get("groupId");
         String siteId = (String) params.get("siteId");
+        String groupId = (String) params.get("groupId");
         try {
-            Map<String, Object> recordingsResponse = meetingManager.getRecordings(ref.getId(), groupId, siteId);
+            Map<String, Object> recordingsResponse = meetingManager.getRecordings(siteId, ref.getId(), groupId);
             return new ActionReturn(recordingsResponse);
-        } catch (BBBException e) {
+        } catch (Exception e) {
             return new ActionReturn(new HashMap<String, String>());
         }
     }
@@ -771,7 +771,7 @@ public class BBBMeetingEntityProvider extends AbstractEntityProvider implements
         }
 
         try {
-            Map<String, Object> recordingsResponse = meetingManager.getSiteRecordings(siteId);
+            Map<String, Object> recordingsResponse = meetingManager.getRecordings(siteId);
             return new ActionReturn(recordingsResponse);
         } catch (Exception e) {
             return new ActionReturn(new HashMap<String, String>());

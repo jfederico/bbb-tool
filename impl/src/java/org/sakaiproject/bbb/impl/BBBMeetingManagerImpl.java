@@ -331,16 +331,12 @@ public class BBBMeetingManagerImpl implements BBBMeetingManager {
         return bbbAPI.getMeetingInfo(meeting.getId(), meeting.getModeratorPassword());
     }
 
-    public Map<String, Object> getRecordings(String meetingID, String groupId, String siteId)
-            throws BBBException {
+    public Map<String, Object> getRecordings(String siteId, String meetingID, String groupId)
+            throws SecurityException, BBBException, Exception {
         BBBMeeting meeting = storageManager.getMeeting(meetingID);
-
-        Map<String, Object> recordings;
-        if (!meeting.getRecording()) {
-            //Mimic empty recordings object
-            recordings = new HashMap<String, Object>();
-            recordings.put("recordings", "");
-            return recordings;
+        if (!meeting.getRecording() || !bbbAPI.isRecordingEnabled()) {
+            // return an empty List of recordings and a SUCCESS key as default response values.
+            return recordingsNone();
         }
 
         Map<String, String> ownerIDs = new HashMap<String, String>();
@@ -352,41 +348,22 @@ public class BBBMeetingManagerImpl implements BBBMeetingManager {
             meetingIDs += "," + meetingID + "[" + groupId + "]";
 
         }
-        recordings = bbbAPI.getRecordings(meetingIDs);
-        // Post-process recordings
-        Object recordingList = recordings.get("recordings");
-        if ("SUCCESS".equals(recordings.get("returncode")) && recordingList != null && recordingList.getClass().equals(ArrayList.class)) {
-            boolean recordingFilterEnabled = this.isRecordingFormatFilterEnabled();
-            User user = userDirectoryService.getCurrentUser();
-            String userId = user.getId();
-            for (Map<String, Object> recordingItem : (List<Map<String, Object>>)recordingList) {
-                // Add meeting ownerId to the recording
-                recordingItem.put("ownerId", ownerIDs.get((String)recordingItem.get("meetingID")));
-                // Filter formats that are not allowed to be shown, only if filter is enabled.
-                if (recordingFilterEnabled) {
-                    recordingsFilterFormats(recordingItem, siteId, userId);
-                }
-            }
-        }
-        return recordings;
+
+        return recordingsFetch(siteId, meetingIDs, ownerIDs);
     }
 
-    public Map<String, Object> getSiteRecordings(String siteId)
-            throws SecurityException, Exception {
+    public Map<String, Object> getRecordings(String siteId)
+            throws SecurityException, BBBException, Exception {
         List<BBBMeeting> meetings = storageManager.getSiteMeetings(siteId, INCLUDE_DELETED_MEETINGS);
         if (meetings.size() == 0 || !bbbAPI.isRecordingEnabled()) {
-            // Set an empty List of recordings and a SUCCESS key as default response values.
-            Map<String, Object> response = new HashMap<String, Object>();
-            response.put("recordings", new ArrayList<Object>());
-            response.put("returncode", "SUCCESS");
-            response.put("messageKey", "noRecordings");
-            return response;
+            // return an empty List of recordings and a SUCCESS key as default response values.
+            return recordingsNone();
         }
 
+        String meetingIDs = "";
         Map<String, String> ownerIDs = new HashMap<String, String>();
         String meetingID;
         String ownerID;
-        String meetingIDs = "";
         for (BBBMeeting meeting : meetings) {
             if (!meeting.getRecording()) {
                 // Meeting is not set to be recorded
@@ -413,8 +390,21 @@ public class BBBMeetingManagerImpl implements BBBMeetingManager {
             }
         }
 
+        return recordingsFetch(siteId, meetingIDs, ownerIDs);
+    }
+
+    private Map<String, Object> recordingsNone() {
+        // return an empty List of recordings and a SUCCESS key as default response values.
+        Map<String, Object> response = new HashMap<String, Object>();
+        response.put("recordings", new ArrayList<Object>());
+        response.put("returncode", "SUCCESS");
+        response.put("messageKey", "noRecordings");
+        return response;
+    }
+
+    private Map<String, Object> recordingsFetch(String siteId, String meetingIDs, Map<String, String> ownerIDs)
+            throws SecurityException, BBBException, Exception {
         Map<String, Object> recordings = bbbAPI.getRecordings(meetingIDs);
-        // Post-process recordings
         Object recordingList = recordings.get("recordings");
         if ("SUCCESS".equals(recordings.get("returncode")) && recordingList != null && recordingList.getClass().equals(ArrayList.class)) {
             boolean recordingFilterEnabled = this.isRecordingFormatFilterEnabled();
@@ -462,12 +452,6 @@ public class BBBMeetingManagerImpl implements BBBMeetingManager {
         }
         // Remove it
         return true;
-    }
-
-    public Map<String, Object> getAllRecordings()
-        throws BBBException {
-        Map<String, Object> recordings = bbbAPI.getRecordings("");
-        return recordings;
     }
 
     public void logMeetingJoin(String meetingId) {
